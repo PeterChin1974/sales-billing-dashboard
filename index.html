@@ -252,38 +252,6 @@ tfoot td{
 }
 .page-section{display:none}
 .page-section.active{display:block}
-.loading{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:999;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  color:var(--green-900);
-  background:rgba(255,255,255,.87);
-}
-.loading.show{display:flex}
-.spinner{
-  width:44px;
-  height:44px;
-  margin-bottom:12px;
-  border:5px solid var(--green-100);
-  border-top-color:var(--green-700);
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.error{
-  display:none;
-  margin-bottom:15px;
-  padding:13px;
-  color:#991b1b;
-  border:1px solid #fecaca;
-  border-radius:10px;
-  background:#fef2f2;
-}
-.empty{padding:35px;text-align:center;color:var(--gray-500)}
 @media(max-width:1100px){
   .filters{grid-template-columns:repeat(3,1fr)}
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
@@ -301,10 +269,6 @@ tfoot td{
   .chart-grid{grid-template-columns:1fr}
   .kpi-value{font-size:21px}
 }
-@media(max-width:480px){
-  .filters,.kpi-grid{grid-template-columns:1fr}
-  .search-field{grid-column:span 1}
-}
 @media print{
   @page{size:A4 landscape;margin:8mm}
   body{background:#fff;font-size:9px}
@@ -312,7 +276,7 @@ tfoot td{
   header h1{color:#14532d;font-size:18px}
   header p,.update-info{color:#374151}
   .container{max-width:none;padding:8px 0}
-  .toolbar,.filters,.actions,.loading,.error{display:none!important}
+  .toolbar,.filters,.actions{display:none!important}
   .print-title{display:block;margin:0 0 8px;color:#14532d}
   .panel,.kpi,.chart-box{box-shadow:none;border:1px solid #bbb}
   .kpi-grid{grid-template-columns:repeat(4,1fr);gap:7px}
@@ -333,34 +297,26 @@ tfoot td{
 </head>
 <body>
 
-<div id="loading" class="loading">
-  <div class="spinner"></div>
-  <strong>กำลังอัปเดตข้อมูลจาก Google Sheets...</strong>
-</div>
-
 <header>
   <div class="header-wrap">
     <div>
       <h1>Sales & Billing Dashboard</h1>
-      <p>ระบบสรุปยอดขาย ยอดวางบิล และสถานะใบสั่งซื้อ PO/WO</p>
+      <p>ระบบสรุปยอดขาย ยอดวางบิล และสถานะใบสั่งซื้อ PO/WO (ข้อมูลจากไฟล์โครงการ)</p>
     </div>
     <div class="update-info">
-      <div>ข้อมูลจาก Google Sheets</div>
-      <div id="lastUpdated">ยังไม่ได้อัปเดต</div>
+      <div>โหมดข้อมูลในตัว (Standalone)</div>
+      <div id="lastUpdated">พร้อมใช้งาน</div>
     </div>
   </div>
 </header>
 
 <main class="container">
-  <div id="errorBox" class="error"></div>
-
   <div class="toolbar">
     <div class="tabs">
       <button class="tab-btn active" data-tab="sales">Dashboard ยอดขาย</button>
       <button class="tab-btn" data-tab="billing">Dashboard วางบิล</button>
     </div>
     <div class="actions">
-      <button class="btn btn-secondary" onclick="loadAllData()">อัปเดตข้อมูล</button>
       <button class="btn btn-light" onclick="resetCurrentFilters()">ล้างตัวกรอง</button>
       <button class="btn btn-primary" onclick="printReport()">พิมพ์รายงาน / PDF</button>
     </div>
@@ -545,8 +501,50 @@ tfoot td{
 </main>
 
 <script>
-const PUBLISHED_SHEET_ID =
-  "2PACX-1vTEF6nqVsW4bMMHGVSONXwgbSI2hMPF7ssxpCaoLU1gp9QZGz93dHiK_pS6X3ynz8HEQ0vJU2oFeLPW";
+/* ข้อมูลฝังในตัว (Embedded Data จากไฟล์ PROJECT.xlsx) */
+const EMBEDDED_SALES = [
+  {po:"PO.B/25120122",date:"2025-12-23",salesperson:"คุณ ปณิธาน  เติมประยูร",customer:"บริษัท บางกอก ซีฟู้ด จำกัด",description:"งาน POLYURETHANE FLOORING SYSTEM (MF) ชั้น 1,2 อาคาร 3 (SPOT REPAIR)",amount:200268.78,job:"8e68e404"},
+  {po:"WO-J0303-0005",date:"2025-02-07",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",description:"(JLK)  EPOXY SELF-LEVELING WITH MOISTURE BARRIER",amount:30000,job:"c3f801ca"},
+  {po:"SET-2025-T00061",date:"2025-02-04",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยนิปปอนฟู้ดส์ จำกัด",description:"ผลิตภัณฑ์ POLYURETHANE WATERPROOF SYSTEM,(HF) สีเขียว, สีครีม",amount:26000,job:"ac2eec0c"},
+  {po:"PO16329350",date:"2025-01-30",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ยูนิลิเวอร์ ไทยโฮลดิ้ง จำกัด",description:"ผลิตภัณฑ์ EPOXY COATING FLOORING SYSTEM",amount:13000,job:"c94d329f"},
+  {po:"PO16328684",date:"2025-01-29",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ยูนิลิเวอร์ ไทยโฮลดิ้ง จำกัด",description:"ผลิตภัณฑ์ EPOXY COATING FLOORING SYSTEM",amount:39000,job:"c94d329f"},
+  {po:"4101291474",date:"2025-01-24",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)",description:"ผลิตภัณฑ์ POLYURETHANE FLOORING SYSTEM(HF) - สี Green",amount:18750,job:"56fcb77b"},
+  {po:"4101294378",date:"2025-01-23",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)",description:"เครื่องมือสำหรับงาน PU.",amount:33850,job:"56fcb77b"},
+  {po:"4101288147",date:"2025-01-20",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)",description:"ผลิตภัณฑ์ใบขัดปูน",amount:34680,job:"56fcb77b"},
+  {po:"PO26004545",date:"2026-03-14",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท สยามไอซิน จำกัด",description:"ผลิตภัณฑ์ EPOXY COATING FLOORING SYSTEM",amount:99180,job:"91496a44"},
+  {po:"SIGN",date:"2026-03-13",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"สกุลไทยเจริญ ซัพพลาย แอนด์เซอร์วิส",description:"งาน EPOXY SELF-LEVELING FLOORING SYSTEM (SPOT REPAIR)อาคาร OP3 หน่วยงาน ไทยออพติคอล",amount:21883.2,job:"54257f8c"},
+  {po:"SIGN",date:"2026-03-13",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"สกุลไทยเจริญ ซัพพลาย แอนด์เซอร์วิส",description:"งาน EPOXY SELF-LEVELING FLOORING SYSTEM (SPOT REPAIR) พื้นที่ MULTI COAT  หน่วยงาน ไทยออพติคอล",amount:60684.56,job:"ec7cd3e4"},
+  {po:"PUG2600664",date:"2026-03-11",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท แอมพาสอินดัสตรี จำกัด",description:"งาน EPOXY SELF-LEVELING & ESD FLOORING SYSTEM พื้นที่ชั้น 3 (ซ.4D)",amount:178380,job:"d9de6e66"},
+  {po:"PO17517715",date:"2026-03-11",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ยูนิลิเวอร์ ไทยโฮลดิ้ง จำกัด",description:"ผลิตภัณฑ์ EPOXY COATING FLOORING SYSTEM",amount:71500,job:"7bbcf2b0"},
+  {po:"SIGN",date:"2026-03-10",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"สกุลไทยเจริญ ซัพพลาย แอนด์เซอร์วิส",description:"งาน POLYURETHANE FLOORING SYSTEM (MF)- SPOT REAPIR พื้นที่ชั้น 1  อาคารจัดส่ง หน่วยงาน ไทยออพติคอล",amount:40191.95,job:"984152c4"},
+  {po:"4101528536",date:"2026-03-10",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท โอคินอสฟู้ด จำกัด",description:"งานเคลือบพื้น POLYURETHANE FLOORING SYSTEM(MF)  แผนก RAW IQF",amount:249350,job:"e90f7481"},
+  {po:"4101519564",date:"2026-03-09",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)",description:"ผลิตภัณฑ์ POLYURETHANE FLOORING SYSTEM",amount:18000,job:"5ac71862"},
+  {po:"4040190254",date:"2026-03-09",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท เฟรเซอร์ส พร็อพเพอร์ตี้ บีเอฟทีแซด จำกัด",description:"งานซ่อมพื้นอาคารบริเวณห้อง Dispatch อุณภูมิ -10 องศาแตกร่อนอาคาร W8  (SPOT REPAIR)",amount:30000,job:"15582c45"},
+  {po:"PO26003858",date:"2026-03-06",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท สยามไอซิน จำกัด",description:"ผลิตภัณฑ์  EPOXY FLOORING SYSTEM",amount:94680,job:"37eb71b2"},
+  {po:"4101521190",date:"2026-03-06",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท โอคินอสฟู้ด จำกัด",description:"งาน POLYURETHANE FLOORING SYSTEM. (MF).Thk 4.00 mm. พื้นที่ RAW IQF",amount:122090,job:"c92e3a59"}
+];
+
+const EMBEDDED_ACCOUNT = [
+  {po:"LC26005045",date:"2026-09-23",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท อลูคอน จำกัด (มหาชน)",invoice:"252/69",amount:80000,job:"54ebc551"},
+  {po:"4000013095",date:"2026-09-22",salesperson:"คุณ พิมพ์รดี  อนันต์เดชาโชติ",customer:"บริษัท เอบี ฟู้ด แอนด์ เบฟเวอร์เรจส์ (ประเทศไทย) จำกัด (00001)",invoice:"249/69",amount:356514.41,job:"54c272e7"},
+  {po:"4000013974",date:"2026-09-22",salesperson:"คุณ พิมพ์รดี  อนันต์เดชาโชติ",customer:"บริษัท เอบี ฟู้ด แอนด์ เบฟเวอร์เรจส์ (ประเทศไทย) จำกัด (00001)",invoice:"250/69",amount:13013,job:"7d3c003b"},
+  {po:"POPE2609-0133",date:"2026-09-22",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท เถกิงอุตสาหกรรมสับปะรดกระป๋อง จำกัด",invoice:"7937",amount:50000,job:"e8561bfc"},
+  {po:"POPE2609-0134",date:"2026-09-22",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท เถกิงอุตสาหกรรมสับปะรดกระป๋อง จำกัด",invoice:"7938",amount:100000,job:"21e953cb"},
+  {po:"8030583149",date:"2026-09-21",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ปูนซิเมนต์ไทย (ท่าหลวง) จำกัด (00001)",invoice:"248/69",amount:122660,job:"a29346ef"},
+  {po:"PO-2026026355 & VO-2026008410",date:"2026-09-18",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท เดอะมอลล์ ชอปปิ้งเซนเตอร์ (หัวหมาก) จำกัด",invoice:"247/69",amount:600721,job:"5eefda87"},
+  {po:"4101616747",date:"2026-09-18",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยยูเนี่ยน กรุ๊ป จำกัด (มหาชน)",invoice:"7933",amount:6000,job:"32df182a"},
+  {po:"PO18061178",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ยูนิลิเวอร์ ไทยโฮลดิ้ง จำกัด",invoice:"7927",amount:19500,job:"68daa460"},
+  {po:"WO-S3755-0124 & WO-S3755-0125",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"240/69",amount:95520,job:"8e4549a4"},
+  {po:"WO-S3755-0161",date:null,salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"242/69",amount:29000,job:"47521396"},
+  {po:"WO-S3755-0230",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"243/69",amount:339800,job:"593daeb9"},
+  {po:"WO-S3756-0141",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"244/69",amount:1446020.49,job:"ad25edd5"},
+  {po:"WO-S3756-0188",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"245/69",amount:70000,job:"cadf9729"},
+  {po:"WO-S3755-0160",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"246/69",amount:43360,job:"1010e3bd"},
+  {po:"PPS2609263",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท นิสสัน สปริง (ประเทศไทย) จำกัด",invoice:"7931",amount:15000,job:"5e4c0368"},
+  {po:"WO-S3755-0161",date:"2026-09-17",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"251/69",amount:33200,job:"743ac1fd"},
+  {po:"SIGN",date:"2026-09-16",salesperson:"คุณ ชินพรรธน์  มงคลสิทธิโชติ",customer:"บริษัท ไทยคาจิมา จำกัด",invoice:"241/69",amount:2890264.99,job:"ecd17eb3"},
+  {po:"LAW ส. 24-01-006, PO-2400003004",date:"2024-03-01",salesperson:"คุณ ปณิธาน  เติมประยูร",customer:"บริษัท เพรซิเดนท์เบเกอรี่ จำกัด (มหาชน)",invoice:"080/67",amount:944632.5,job:"9dc3d558"}
+];
 
 const MONTHS = [
   "ทุกเดือน","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
@@ -557,74 +555,9 @@ let salesRows = [];
 let accountRows = [];
 let currentTab = "sales";
 
-function normalizeHeader(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(/[._/-]/g, "");
-}
-
-function findValue(row, names) {
-  const keys = Object.keys(row);
-  for (const name of names) {
-    const target = normalizeHeader(name);
-    const key = keys.find(k => normalizeHeader(k) === target);
-    if (key !== undefined) return row[key];
-  }
-  return "";
-}
-
-function cleanText(value) {
-  return String(value == null ? "" : value).trim();
-}
-
-function parseMoney(value) {
-  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const cleaned = String(value || "")
-    .replace(/[฿,\s]/g, "")
-    .replace(/[^\d.-]/g, "");
-  const number = Number(cleaned);
-  return Number.isFinite(number) ? number : 0;
-}
-
 function parseDate(value) {
   if (!value) return null;
-  if (value instanceof Date && !isNaN(value)) return value;
-
-  if (typeof value === "number") {
-    const date = new Date(Math.round((value - 25569) * 86400 * 1000));
-    return isNaN(date) ? null : date;
-  }
-
-  const text = String(value).trim();
-  const googleDate = text.match(/Date\((\d+),(\d+),(\d+)\)/);
-  if (googleDate) {
-    return new Date(
-      Number(googleDate[1]),
-      Number(googleDate[2]),
-      Number(googleDate[3])
-    );
-  }
-
-  const parts = text.split(/[\/\-]/);
-  if (parts.length === 3) {
-    let day, month, year;
-    if (parts[0].length === 4) {
-      year = Number(parts[0]);
-      month = Number(parts[1]) - 1;
-      day = Number(parts[2]);
-    } else {
-      day = Number(parts[0]);
-      month = Number(parts[1]) - 1;
-      year = Number(parts[2]);
-    }
-    if (year > 2400) year -= 543;
-    const date = new Date(year, month, day);
-    return isNaN(date) ? null : date;
-  }
-
-  const date = new Date(text);
+  const date = new Date(value);
   return isNaN(date) ? null : date;
 }
 
@@ -656,155 +589,29 @@ function escapeHTML(value) {
 }
 
 function normalizePO(value) {
-  return cleanText(value).toUpperCase().replace(/\s+/g," ");
+  return String(value || "").trim().toUpperCase().replace(/\s+/g," ");
 }
 
 function poGroupKey(po, job) {
   const normalized = normalizePO(po);
   const placeholder = ["SIGN","WAIT","รอ","-",""].includes(normalized);
-  return placeholder ? `${normalized || "NO-PO"}|${cleanText(job)}` : normalized;
+  return placeholder ? `${normalized || "NO-PO"}|${String(job||"").trim()}` : normalized;
 }
 
-function loadGoogleSheet(sheetName) {
-  return new Promise((resolve, reject) => {
-    const callbackName =
-      "sheetCallback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+function initData() {
+  salesRows = EMBEDDED_SALES.map(item => ({
+    ...item,
+    date: parseDate(item.date)
+  }));
 
-    const script = document.createElement("script");
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error(`หมดเวลารอข้อมูลจากชีต ${sheetName}`));
-    }, 30000);
+  accountRows = EMBEDDED_ACCOUNT.map(item => ({
+    ...item,
+    date: parseDate(item.date)
+  }));
 
-    function cleanup() {
-      clearTimeout(timeout);
-      if (script.parentNode) script.parentNode.removeChild(script);
-      delete window[callbackName];
-    }
-
-    window[callbackName] = response => {
-      try {
-        if (!response || response.status === "error") {
-          throw new Error(`ไม่สามารถอ่านชีต ${sheetName}`);
-        }
-
-        const table = response.table;
-        const headers = table.cols.map((col, index) =>
-          cleanText(col.label) || `Column ${index + 1}`
-        );
-
-        const rows = table.rows.map(row => {
-          const object = {};
-          headers.forEach((header, index) => {
-            const cell = row.c && row.c[index] ? row.c[index] : null;
-            object[header] = cell ? cell.v : "";
-          });
-          return object;
-        });
-
-        cleanup();
-        resolve(rows);
-      } catch (error) {
-        cleanup();
-        reject(error);
-      }
-    };
-
-    script.onerror = () => {
-      cleanup();
-      reject(new Error(`เชื่อมต่อชีต ${sheetName} ไม่สำเร็จ`));
-    };
-
-    const base =
-      `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/gviz/tq`;
-
-    script.src =
-      `${base}?sheet=${encodeURIComponent(sheetName)}` +
-      `&headers=1&tqx=responseHandler:${callbackName}`;
-
-    document.head.appendChild(script);
-  });
-}
-
-function mapSalesRow(row) {
-  const date = parseDate(findValue(row, ["PO./Wo.Date","PO./WO.Date","PO Date"]));
-  return {
-    id: cleanText(findValue(row, ["SubJob ID"])),
-    job: cleanText(findValue(row, ["Job No."])),
-    salesperson: cleanText(findValue(row, ["Sales Name"])),
-    customer: cleanText(findValue(row, ["Customer Name"])),
-    description: cleanText(findValue(row, ["Description"])),
-    po: cleanText(findValue(row, ["PO./WO.No.","PO/WO No.","PO No."])),
-    date,
-    amount: parseMoney(findValue(row, ["PO./WO.Value","PO/WO Value"])),
-    invoiceStatus: cleanText(findValue(row, ["สถานะวางบิล"]))
-  };
-}
-
-function mapAccountRow(row) {
-  const date = parseDate(findValue(row, ["Invoice Date.","Invoice Date"]));
-  return {
-    id: cleanText(findValue(row, ["Acc ID"])),
-    job: cleanText(findValue(row, ["Job No."])),
-    salesperson: cleanText(findValue(row, ["Sales Name"])),
-    customer: cleanText(findValue(row, ["Customer Name"])),
-    po: cleanText(findValue(row, ["PO./WO.No.","PO/WO No.","PO No."])),
-    invoice: cleanText(findValue(row, ["Invoice No.","Invoice No"])),
-    date,
-    amount: parseMoney(findValue(row, ["Amount"])),
-    note: cleanText(findValue(row, ["Note"]))
-  };
-}
-
-async function loadAllData() {
-  setLoading(true);
-  hideError();
-
-  try {
-    const [rawSales, rawAccount] = await Promise.all([
-      loadGoogleSheet("SubJOB"),
-      loadGoogleSheet("ACCOUNT")
-    ]);
-
-    salesRows = rawSales.map(mapSalesRow).filter(row =>
-      row.po || row.customer || row.salesperson || row.amount
-    );
-
-    accountRows = rawAccount.map(mapAccountRow).filter(row =>
-      row.po || row.invoice || row.customer || row.amount
-    );
-
-    setupFilters();
-    renderSales();
-    renderBilling();
-
-    document.getElementById("lastUpdated").textContent =
-      "อัปเดตล่าสุด " +
-      new Intl.DateTimeFormat("th-TH", {
-        dateStyle:"medium", timeStyle:"medium"
-      }).format(new Date());
-  } catch (error) {
-    showError(
-      `${error.message} กรุณาตรวจสอบว่าชีต SubJOB และ ACCOUNT ` +
-      `ยังคงเผยแพร่สู่เว็บและชื่อชีตไม่ได้ถูกเปลี่ยน`
-    );
-  } finally {
-    setLoading(false);
-  }
-}
-
-function setLoading(show) {
-  document.getElementById("loading").classList.toggle("show", show);
-}
-
-function showError(message) {
-  const box = document.getElementById("errorBox");
-  box.textContent = message;
-  box.style.display = "block";
-}
-
-function hideError() {
-  document.getElementById("errorBox").style.display = "none";
+  setupFilters();
+  renderSales();
+  renderBilling();
 }
 
 function uniqueSorted(values) {
@@ -962,7 +769,7 @@ function renderSales() {
       <td style="white-space:normal;min-width:300px">${escapeHTML(row.description || "-")}</td>
       <td class="money">${escapeHTML(formatMoney(row.amount))}</td>
     </tr>
-  `).join("") : `<tr><td colspan="6" class="empty">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
+  `).join("") : `<tr><td colspan="6" class="empty" style="text-align:center;padding:30px;">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
 
   document.getElementById("salesTableFoot").innerHTML = `
     <tr>
@@ -1132,7 +939,7 @@ function renderBilling() {
         </td>
       </tr>
     `;
-  }).join("") : `<tr><td colspan="9" class="empty">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
+  }).join("") : `<tr><td colspan="9" class="empty" style="text-align:center;padding:30px;">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
 
   document.getElementById("billingTableFoot").innerHTML = `
     <tr>
@@ -1395,10 +1202,7 @@ window.addEventListener("resize",() => {
   },250);
 });
 
-loadAllData();
-
-/* อัปเดตข้อมูลอัตโนมัติทุก 15 นาที */
-setInterval(loadAllData,15 * 60 * 1000);
+initData();
 </script>
 </body>
 </html>
