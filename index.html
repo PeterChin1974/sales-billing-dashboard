@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sales & Billing Dashboard</title>
+<style>
+:root{
+  --green-950:#052e16;
+  --green-900:#14532d;
+  --green-800:#166534;
+  --green-700:#15803d;
+  --green-600:#16a34a;
+  --green-500:#22c55e;
+  --green-100:#dcfce7;
+  --green-50:#f0fdf4;
+  --amber:#f59e0b;
+  --red:#dc2626;
+  --blue:#2563eb;
+  --gray-900:#111827;
+  --gray-700:#374151;
+  --gray-500:#6b7280;
+  --gray-300:#d1d5db;
+  --gray-200:#e5e7eb;
+  --gray-100:#f3f4f6;
+  --white:#fff;
+  --shadow:0 10px 30px rgba(20,83,45,.10);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--gray-900);
+  background:linear-gradient(135deg,#effdf4,#f8fafc);
+  font-family:"Tahoma","Noto Sans Thai",Arial,sans-serif;
+}
+button,input,select{font:inherit}
+header{
+  color:#fff;
+  padding:22px 26px;
+  background:linear-gradient(120deg,var(--green-950),var(--green-700));
+  box-shadow:var(--shadow);
+}
+.header-wrap{
+  max-width:1600px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+header h1{margin:0 0 5px;font-size:25px}
+header p{margin:0;color:#dcfce7;font-size:14px}
+.update-info{text-align:right;font-size:13px;color:#dcfce7}
+.container{max-width:1600px;margin:auto;padding:20px}
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+.tabs{
+  display:flex;
+  gap:7px;
+  background:#fff;
+  padding:5px;
+  border:1px solid var(--gray-200);
+  border-radius:12px;
+}
+.tab-btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 17px;
+  color:var(--gray-700);
+  background:transparent;
+  cursor:pointer;
+  font-weight:700;
+}
+.tab-btn.active{color:#fff;background:var(--green-700)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:700;
+}
+.btn-primary{color:#fff;background:var(--green-700)}
+.btn-secondary{color:var(--green-900);background:var(--green-100)}
+.btn-light{color:var(--gray-700);background:#fff;border:1px solid var(--gray-300)}
+.btn:hover{filter:brightness(.96)}
+.panel{
+  margin-bottom:16px;
+  padding:17px;
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+.filters{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(160px,1fr));
+  gap:12px;
+}
+.field label{
+  display:block;
+  margin-bottom:6px;
+  color:var(--gray-700);
+  font-size:12px;
+  font-weight:700;
+}
+.field input,.field select{
+  width:100%;
+  height:41px;
+  padding:8px 11px;
+  border:1px solid var(--gray-300);
+  border-radius:8px;
+  outline:none;
+  background:#fff;
+}
+.field input:focus,.field select:focus{
+  border-color:var(--green-500);
+  box-shadow:0 0 0 3px rgba(34,197,94,.13);
+}
+.search-field{grid-column:span 2}
+.print-title{display:none}
+.filter-summary{
+  margin-top:12px;
+  color:var(--gray-500);
+  font-size:12px;
+}
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:16px;
+}
+.kpi{
+  position:relative;
+  overflow:hidden;
+  min-height:126px;
+  padding:18px;
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+.kpi:after{
+  content:"";
+  position:absolute;
+  right:-18px;
+  bottom:-28px;
+  width:95px;
+  height:95px;
+  border-radius:50%;
+  background:var(--green-100);
+}
+.kpi-label{color:var(--gray-500);font-size:13px}
+.kpi-value{
+  position:relative;
+  z-index:1;
+  margin-top:13px;
+  color:var(--green-900);
+  font-size:26px;
+  font-weight:800;
+}
+.kpi-note{margin-top:7px;color:var(--gray-500);font-size:11px}
+.chart-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+.chart-box{
+  background:#fff;
+  border:1px solid var(--gray-200);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.chart-box h3{margin:0 0 13px;font-size:15px;color:var(--green-900)}
+.chart-wrap{position:relative;width:100%;height:310px}
+canvas{width:100%;height:100%}
+.table-panel{padding:0;overflow:hidden}
+.table-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:15px 17px;
+  border-bottom:1px solid var(--gray-200);
+}
+.table-header h3{margin:0;color:var(--green-900);font-size:16px}
+.record-count{color:var(--gray-500);font-size:12px}
+.table-scroll{overflow:auto;max-height:620px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  white-space:nowrap;
+  font-size:12px;
+}
+th,td{
+  padding:10px 11px;
+  border-bottom:1px solid var(--gray-200);
+  vertical-align:top;
+}
+th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  color:#fff;
+  background:var(--green-800);
+  text-align:left;
+}
+tbody tr:nth-child(even){background:#f9fdf9}
+tbody tr:hover{background:var(--green-50)}
+td.money,th.money{text-align:right}
+tfoot td{
+  position:sticky;
+  bottom:0;
+  z-index:2;
+  color:#fff;
+  background:var(--green-900);
+  font-weight:800;
+}
+.status{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+}
+.status-complete{color:#166534;background:#dcfce7}
+.status-partial{color:#92400e;background:#fef3c7}
+.status-none{color:#991b1b;background:#fee2e2}
+.status-over{color:#1e40af;background:#dbeafe}
+.status-unknown{color:#374151;background:#e5e7eb}
+.progress{
+  width:130px;
+  height:7px;
+  margin-top:5px;
+  overflow:hidden;
+  border-radius:10px;
+  background:var(--gray-200);
+}
+.progress span{
+  display:block;
+  height:100%;
+  border-radius:10px;
+  background:var(--green-500);
+}
+.page-section{display:none}
+.page-section.active{display:block}
+.loading{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:999;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  color:var(--green-900);
+  background:rgba(255,255,255,.87);
+}
+.loading.show{display:flex}
+.spinner{
+  width:44px;
+  height:44px;
+  margin-bottom:12px;
+  border:5px solid var(--green-100);
+  border-top-color:var(--green-700);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{
+  display:none;
+  margin-bottom:15px;
+  padding:13px;
+  color:#991b1b;
+  border:1px solid #fecaca;
+  border-radius:10px;
+  background:#fef2f2;
+}
+.empty{padding:35px;text-align:center;color:var(--gray-500)}
+@media(max-width:1100px){
+  .filters{grid-template-columns:repeat(3,1fr)}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  header{padding:18px}
+  .header-wrap{align-items:flex-start;flex-direction:column}
+  .update-info{text-align:left}
+  .container{padding:12px}
+  .toolbar{align-items:stretch;flex-direction:column}
+  .tabs{overflow:auto}
+  .actions .btn{flex:1}
+  .filters{grid-template-columns:1fr 1fr}
+  .search-field{grid-column:span 2}
+  .chart-grid{grid-template-columns:1fr}
+  .kpi-value{font-size:21px}
+}
+@media(max-width:480px){
+  .filters,.kpi-grid{grid-template-columns:1fr}
+  .search-field{grid-column:span 1}
+}
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff;font-size:9px}
+  header{padding:10px;background:#fff!important;color:#000;border-bottom:2px solid #166534}
+  header h1{color:#14532d;font-size:18px}
+  header p,.update-info{color:#374151}
+  .container{max-width:none;padding:8px 0}
+  .toolbar,.filters,.actions,.loading,.error{display:none!important}
+  .print-title{display:block;margin:0 0 8px;color:#14532d}
+  .panel,.kpi,.chart-box{box-shadow:none;border:1px solid #bbb}
+  .kpi-grid{grid-template-columns:repeat(4,1fr);gap:7px}
+  .kpi{min-height:76px;padding:9px}
+  .kpi-value{font-size:15px;margin-top:5px}
+  .chart-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .chart-wrap{height:210px}
+  .table-scroll{overflow:visible;max-height:none}
+  table{white-space:normal;font-size:7px}
+  th,td{padding:4px}
+  th{position:static;background:#166534!important;color:#fff!important}
+  tfoot td{position:static;background:#14532d!important;color:#fff!important}
+  .page-section{display:none!important}
+  .page-section.active{display:block!important}
+  .status{border:1px solid #999;padding:2px 4px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <strong>กำลังอัปเดตข้อมูลจาก Google Sheets...</strong>
+</div>
+
+<header>
+  <div class="header-wrap">
+    <div>
+      <h1>Sales & Billing Dashboard</h1>
+      <p>ระบบสรุปยอดขาย ยอดวางบิล และสถานะใบสั่งซื้อ PO/WO</p>
+    </div>
+    <div class="update-info">
+      <div>ข้อมูลจาก Google Sheets</div>
+      <div id="lastUpdated">ยังไม่ได้อัปเดต</div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <div id="errorBox" class="error"></div>
+
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="sales">Dashboard ยอดขาย</button>
+      <button class="tab-btn" data-tab="billing">Dashboard วางบิล</button>
+    </div>
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="loadAllData()">อัปเดตข้อมูล</button>
+      <button class="btn btn-light" onclick="resetCurrentFilters()">ล้างตัวกรอง</button>
+      <button class="btn btn-primary" onclick="printReport()">พิมพ์รายงาน / PDF</button>
+    </div>
+  </div>
+
+  <section id="salesSection" class="page-section active">
+    <h2 class="print-title">รายงานสรุปยอดขายตามใบสั่งซื้อ PO/WO</h2>
+
+    <div class="panel">
+      <div class="filters">
+        <div class="field">
+          <label>เดือนใบสั่งซื้อ</label>
+          <select id="salesMonth"></select>
+        </div>
+        <div class="field">
+          <label>ปีใบสั่งซื้อ</label>
+          <select id="salesYear"></select>
+        </div>
+        <div class="field">
+          <label>พนักงานขาย</label>
+          <select id="salesSalesperson"></select>
+        </div>
+        <div class="field">
+          <label>ลูกค้า</label>
+          <select id="salesCustomer"></select>
+        </div>
+        <div class="field">
+          <label>ค้นหาเลข PO/WO</label>
+          <input id="salesSearch" type="search" placeholder="พิมพ์เลข PO/WO">
+        </div>
+      </div>
+      <div id="salesFilterSummary" class="filter-summary"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">ยอดขายรวม</div>
+        <div id="salesTotal" class="kpi-value">฿0.00</div>
+        <div class="kpi-note">ตามตัวกรองที่เลือก</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">จำนวน PO/WO</div>
+        <div id="salesPOCount" class="kpi-value">0</div>
+        <div class="kpi-note">รวมเลขเดียวกันเป็นหนึ่งรายการ</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">จำนวนลูกค้า</div>
+        <div id="salesCustomerCount" class="kpi-value">0</div>
+        <div class="kpi-note">ลูกค้าที่มีรายการขาย</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">ยอดขายเฉลี่ยต่อ PO/WO</div>
+        <div id="salesAverage" class="kpi-value">฿0.00</div>
+        <div class="kpi-note">ยอดขายรวม ÷ จำนวน PO/WO</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>ยอดขายแยกตามพนักงานขาย</h3>
+        <div class="chart-wrap"><canvas id="salesByPersonChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>ลูกค้าที่มียอดขายสูงสุด</h3>
+        <div class="chart-wrap"><canvas id="salesByCustomerChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="panel table-panel">
+      <div class="table-header">
+        <h3>รายละเอียดยอดขาย</h3>
+        <div id="salesRecordCount" class="record-count"></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>วันที่ PO/WO</th>
+              <th>เลข PO/WO</th>
+              <th>พนักงานขาย</th>
+              <th>ลูกค้า</th>
+              <th>รายละเอียด</th>
+              <th class="money">มูลค่า PO/WO</th>
+            </tr>
+          </thead>
+          <tbody id="salesTableBody"></tbody>
+          <tfoot id="salesTableFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="billingSection" class="page-section">
+    <h2 class="print-title">รายงานสรุปยอดวางบิลและสถานะ PO/WO</h2>
+
+    <div class="panel">
+      <div class="filters">
+        <div class="field">
+          <label>เดือนวางบิล</label>
+          <select id="billingMonth"></select>
+        </div>
+        <div class="field">
+          <label>ปีวางบิล</label>
+          <select id="billingYear"></select>
+        </div>
+        <div class="field">
+          <label>พนักงานขาย</label>
+          <select id="billingSalesperson"></select>
+        </div>
+        <div class="field">
+          <label>ลูกค้า</label>
+          <select id="billingCustomer"></select>
+        </div>
+        <div class="field search-field">
+          <label>ค้นหาเลข PO/WO หรือ Invoice</label>
+          <input id="billingSearch" type="search" placeholder="พิมพ์เลข PO/WO หรือ Invoice">
+        </div>
+      </div>
+      <div id="billingFilterSummary" class="filter-summary"></div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">มูลค่า PO/WO รวม</div>
+        <div id="billingPOTotal" class="kpi-value">฿0.00</div>
+        <div class="kpi-note">มูลค่าจากชีต SubJOB</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">ยอดวางบิลในช่วงที่เลือก</div>
+        <div id="billingPeriodTotal" class="kpi-value">฿0.00</div>
+        <div class="kpi-note">ตามเดือนและปีวางบิล</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">ยอดวางบิลสะสม</div>
+        <div id="billingCumulativeTotal" class="kpi-value">฿0.00</div>
+        <div class="kpi-note">รวม Invoice ทุกเดือนของ PO/WO</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">เปอร์เซ็นต์วางบิลสะสม</div>
+        <div id="billingPercent" class="kpi-value">0%</div>
+        <div class="kpi-note">ยอดสะสมเทียบกับมูลค่า PO/WO</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>ยอดวางบิลในช่วงที่เลือก แยกตามพนักงานขาย</h3>
+        <div class="chart-wrap"><canvas id="billingByPersonChart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <h3>สัดส่วนสถานะการวางบิล</h3>
+        <div class="chart-wrap"><canvas id="billingStatusChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="panel table-panel">
+      <div class="table-header">
+        <h3>รายละเอียดการวางบิล</h3>
+        <div id="billingRecordCount" class="record-count"></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>วันที่วางบิล</th>
+              <th>เลข PO/WO</th>
+              <th>เลข Invoice</th>
+              <th>พนักงานขาย</th>
+              <th>ลูกค้า</th>
+              <th class="money">มูลค่า PO/WO</th>
+              <th class="money">วางบิลงวดที่เลือก</th>
+              <th class="money">วางบิลสะสม</th>
+              <th>เปอร์เซ็นต์ / สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="billingTableBody"></tbody>
+          <tfoot id="billingTableFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const PUBLISHED_SHEET_ID =
+  "2PACX-1vTEF6nqVsW4bMMHGVSONXwgbSI2hMPF7ssxpCaoLU1gp9QZGz93dHiK_pS6X3ynz8HEQ0vJU2oFeLPW";
+
+const MONTHS = [
+  "ทุกเดือน","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+  "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+];
+
+let salesRows = [];
+let accountRows = [];
+let currentTab = "sales";
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[._/-]/g, "");
+}
+
+function findValue(row, names) {
+  const keys = Object.keys(row);
+  for (const name of names) {
+    const target = normalizeHeader(name);
+    const key = keys.find(k => normalizeHeader(k) === target);
+    if (key !== undefined) return row[key];
+  }
+  return "";
+}
+
+function cleanText(value) {
+  return String(value == null ? "" : value).trim();
+}
+
+function parseMoney(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const cleaned = String(value || "")
+    .replace(/[฿,\s]/g, "")
+    .replace(/[^\d.-]/g, "");
+  const number = Number(cleaned);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  if (value instanceof Date && !isNaN(value)) return value;
+
+  if (typeof value === "number") {
+    const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+    return isNaN(date) ? null : date;
+  }
+
+  const text = String(value).trim();
+  const googleDate = text.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (googleDate) {
+    return new Date(
+      Number(googleDate[1]),
+      Number(googleDate[2]),
+      Number(googleDate[3])
+    );
+  }
+
+  const parts = text.split(/[\/\-]/);
+  if (parts.length === 3) {
+    let day, month, year;
+    if (parts[0].length === 4) {
+      year = Number(parts[0]);
+      month = Number(parts[1]) - 1;
+      day = Number(parts[2]);
+    } else {
+      day = Number(parts[0]);
+      month = Number(parts[1]) - 1;
+      year = Number(parts[2]);
+    }
+    if (year > 2400) year -= 543;
+    const date = new Date(year, month, day);
+    return isNaN(date) ? null : date;
+  }
+
+  const date = new Date(text);
+  return isNaN(date) ? null : date;
+}
+
+function formatDate(date) {
+  if (!date) return "-";
+  return new Intl.DateTimeFormat("th-TH", {
+    day:"2-digit", month:"2-digit", year:"numeric"
+  }).format(date);
+}
+
+function formatMoney(value) {
+  return new Intl.NumberFormat("th-TH", {
+    style:"currency", currency:"THB",
+    minimumFractionDigits:2, maximumFractionDigits:2
+  }).format(Number(value) || 0);
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("th-TH").format(Number(value) || 0);
+}
+
+function escapeHTML(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function normalizePO(value) {
+  return cleanText(value).toUpperCase().replace(/\s+/g," ");
+}
+
+function poGroupKey(po, job) {
+  const normalized = normalizePO(po);
+  const placeholder = ["SIGN","WAIT","รอ","-",""].includes(normalized);
+  return placeholder ? `${normalized || "NO-PO"}|${cleanText(job)}` : normalized;
+}
+
+function loadGoogleSheet(sheetName) {
+  return new Promise((resolve, reject) => {
+    const callbackName =
+      "sheetCallback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+
+    const script = document.createElement("script");
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error(`หมดเวลารอข้อมูลจากชีต ${sheetName}`));
+    }, 30000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      delete window[callbackName];
+    }
+
+    window[callbackName] = response => {
+      try {
+        if (!response || response.status === "error") {
+          throw new Error(`ไม่สามารถอ่านชีต ${sheetName}`);
+        }
+
+        const table = response.table;
+        const headers = table.cols.map((col, index) =>
+          cleanText(col.label) || `Column ${index + 1}`
+        );
+
+        const rows = table.rows.map(row => {
+          const object = {};
+          headers.forEach((header, index) => {
+            const cell = row.c && row.c[index] ? row.c[index] : null;
+            object[header] = cell ? cell.v : "";
+          });
+          return object;
+        });
+
+        cleanup();
+        resolve(rows);
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error(`เชื่อมต่อชีต ${sheetName} ไม่สำเร็จ`));
+    };
+
+    const base =
+      `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/gviz/tq`;
+
+    script.src =
+      `${base}?sheet=${encodeURIComponent(sheetName)}` +
+      `&headers=1&tqx=responseHandler:${callbackName}`;
+
+    document.head.appendChild(script);
+  });
+}
+
+function mapSalesRow(row) {
+  const date = parseDate(findValue(row, ["PO./Wo.Date","PO./WO.Date","PO Date"]));
+  return {
+    id: cleanText(findValue(row, ["SubJob ID"])),
+    job: cleanText(findValue(row, ["Job No."])),
+    salesperson: cleanText(findValue(row, ["Sales Name"])),
+    customer: cleanText(findValue(row, ["Customer Name"])),
+    description: cleanText(findValue(row, ["Description"])),
+    po: cleanText(findValue(row, ["PO./WO.No.","PO/WO No.","PO No."])),
+    date,
+    amount: parseMoney(findValue(row, ["PO./WO.Value","PO/WO Value"])),
+    invoiceStatus: cleanText(findValue(row, ["สถานะวางบิล"]))
+  };
+}
+
+function mapAccountRow(row) {
+  const date = parseDate(findValue(row, ["Invoice Date.","Invoice Date"]));
+  return {
+    id: cleanText(findValue(row, ["Acc ID"])),
+    job: cleanText(findValue(row, ["Job No."])),
+    salesperson: cleanText(findValue(row, ["Sales Name"])),
+    customer: cleanText(findValue(row, ["Customer Name"])),
+    po: cleanText(findValue(row, ["PO./WO.No.","PO/WO No.","PO No."])),
+    invoice: cleanText(findValue(row, ["Invoice No.","Invoice No"])),
+    date,
+    amount: parseMoney(findValue(row, ["Amount"])),
+    note: cleanText(findValue(row, ["Note"]))
+  };
+}
+
+async function loadAllData() {
+  setLoading(true);
+  hideError();
+
+  try {
+    const [rawSales, rawAccount] = await Promise.all([
+      loadGoogleSheet("SubJOB"),
+      loadGoogleSheet("ACCOUNT")
+    ]);
+
+    salesRows = rawSales.map(mapSalesRow).filter(row =>
+      row.po || row.customer || row.salesperson || row.amount
+    );
+
+    accountRows = rawAccount.map(mapAccountRow).filter(row =>
+      row.po || row.invoice || row.customer || row.amount
+    );
+
+    setupFilters();
+    renderSales();
+    renderBilling();
+
+    document.getElementById("lastUpdated").textContent =
+      "อัปเดตล่าสุด " +
+      new Intl.DateTimeFormat("th-TH", {
+        dateStyle:"medium", timeStyle:"medium"
+      }).format(new Date());
+  } catch (error) {
+    showError(
+      `${error.message} กรุณาตรวจสอบว่าชีต SubJOB และ ACCOUNT ` +
+      `ยังคงเผยแพร่สู่เว็บและชื่อชีตไม่ได้ถูกเปลี่ยน`
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(show) {
+  document.getElementById("loading").classList.toggle("show", show);
+}
+
+function showError(message) {
+  const box = document.getElementById("errorBox");
+  box.textContent = message;
+  box.style.display = "block";
+}
+
+function hideError() {
+  document.getElementById("errorBox").style.display = "none";
+}
+
+function uniqueSorted(values) {
+  return [...new Set(values.filter(Boolean))]
+    .sort((a,b) => String(a).localeCompare(String(b),"th"));
+}
+
+function fillSelect(id, values, allText) {
+  const select = document.getElementById(id);
+  const oldValue = select.value;
+  select.innerHTML =
+    `<option value="">${escapeHTML(allText)}</option>` +
+    values.map(value =>
+      `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`
+    ).join("");
+
+  if ([...select.options].some(option => option.value === oldValue)) {
+    select.value = oldValue;
+  }
+}
+
+function fillMonthSelect(id) {
+  document.getElementById(id).innerHTML = MONTHS.map((month,index) =>
+    `<option value="${index || ""}">${month}</option>`
+  ).join("");
+}
+
+function fillYearSelect(id, dates) {
+  const years = uniqueSorted(
+    dates.filter(Boolean).map(date => String(date.getFullYear()))
+  ).sort((a,b) => Number(b) - Number(a));
+
+  fillSelect(id, years, "ทุกปี");
+}
+
+function setupFilters() {
+  fillMonthSelect("salesMonth");
+  fillMonthSelect("billingMonth");
+
+  fillYearSelect("salesYear", salesRows.map(row => row.date));
+  fillYearSelect("billingYear", accountRows.map(row => row.date));
+
+  fillSelect(
+    "salesSalesperson",
+    uniqueSorted(salesRows.map(row => row.salesperson)),
+    "พนักงานขายทั้งหมด"
+  );
+  fillSelect(
+    "salesCustomer",
+    uniqueSorted(salesRows.map(row => row.customer)),
+    "ลูกค้าทั้งหมด"
+  );
+  fillSelect(
+    "billingSalesperson",
+    uniqueSorted(accountRows.map(row => row.salesperson)),
+    "พนักงานขายทั้งหมด"
+  );
+  fillSelect(
+    "billingCustomer",
+    uniqueSorted(accountRows.map(row => row.customer)),
+    "ลูกค้าทั้งหมด"
+  );
+}
+
+function getFilterValue(id) {
+  return document.getElementById(id).value;
+}
+
+function matchesDate(date, month, year) {
+  if (!month && !year) return true;
+  if (!date) return false;
+  if (month && date.getMonth() + 1 !== Number(month)) return false;
+  if (year && date.getFullYear() !== Number(year)) return false;
+  return true;
+}
+
+function groupSales(rows) {
+  const map = new Map();
+
+  rows.forEach(row => {
+    const key = poGroupKey(row.po,row.job);
+    if (!map.has(key)) {
+      map.set(key,{
+        key,
+        po:row.po || "-",
+        jobs:new Set(),
+        salespeople:new Set(),
+        customers:new Set(),
+        descriptions:new Set(),
+        dates:[],
+        amount:0
+      });
+    }
+
+    const group = map.get(key);
+    if (row.job) group.jobs.add(row.job);
+    if (row.salesperson) group.salespeople.add(row.salesperson);
+    if (row.customer) group.customers.add(row.customer);
+    if (row.description) group.descriptions.add(row.description);
+    if (row.date) group.dates.push(row.date);
+    group.amount += row.amount;
+  });
+
+  return [...map.values()].map(group => ({
+    ...group,
+    salesperson:[...group.salespeople].join(", "),
+    customer:[...group.customers].join(", "),
+    description:[...group.descriptions].join(" | "),
+    date:group.dates.sort((a,b) => a-b)[0] || null
+  }));
+}
+
+function renderSales() {
+  const month = getFilterValue("salesMonth");
+  const year = getFilterValue("salesYear");
+  const salesperson = getFilterValue("salesSalesperson");
+  const customer = getFilterValue("salesCustomer");
+  const search = getFilterValue("salesSearch").trim().toLowerCase();
+
+  const filtered = salesRows.filter(row =>
+    matchesDate(row.date,month,year) &&
+    (!salesperson || row.salesperson === salesperson) &&
+    (!customer || row.customer === customer) &&
+    (!search || row.po.toLowerCase().includes(search))
+  );
+
+  const grouped = groupSales(filtered).sort((a,b) =>
+    (b.date?.getTime() || 0) - (a.date?.getTime() || 0)
+  );
+
+  const total = grouped.reduce((sum,row) => sum + row.amount,0);
+  const customers = new Set(
+    grouped.flatMap(row => [...row.customers])
+  ).size;
+
+  setText("salesTotal",formatMoney(total));
+  setText("salesPOCount",formatNumber(grouped.length));
+  setText("salesCustomerCount",formatNumber(customers));
+  setText(
+    "salesAverage",
+    formatMoney(grouped.length ? total / grouped.length : 0)
+  );
+  setText("salesRecordCount",`${formatNumber(grouped.length)} รายการ`);
+
+  document.getElementById("salesFilterSummary").textContent =
+    buildFilterSummary(month,year,salesperson,customer,search);
+
+  const body = document.getElementById("salesTableBody");
+  body.innerHTML = grouped.length ? grouped.map(row => `
+    <tr>
+      <td>${escapeHTML(formatDate(row.date))}</td>
+      <td><strong>${escapeHTML(row.po)}</strong></td>
+      <td>${escapeHTML(row.salesperson || "-")}</td>
+      <td>${escapeHTML(row.customer || "-")}</td>
+      <td style="white-space:normal;min-width:300px">${escapeHTML(row.description || "-")}</td>
+      <td class="money">${escapeHTML(formatMoney(row.amount))}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="6" class="empty">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
+
+  document.getElementById("salesTableFoot").innerHTML = `
+    <tr>
+      <td colspan="5">ยอดขายรวม ${formatNumber(grouped.length)} PO/WO</td>
+      <td class="money">${formatMoney(total)}</td>
+    </tr>
+  `;
+
+  drawBarChart(
+    "salesByPersonChart",
+    aggregate(grouped,"salesperson","amount").slice(0,10),
+    "#15803d"
+  );
+  drawBarChart(
+    "salesByCustomerChart",
+    aggregate(grouped,"customer","amount").slice(0,10),
+    "#22c55e"
+  );
+}
+
+function createSalesLookup() {
+  const lookup = new Map();
+
+  groupSales(salesRows).forEach(group => {
+    lookup.set(group.key,group);
+
+    const normalPO = normalizePO(group.po);
+    if (normalPO && !lookup.has(normalPO)) lookup.set(normalPO,group);
+  });
+
+  return lookup;
+}
+
+function createCumulativeBilling() {
+  const map = new Map();
+
+  accountRows.forEach(row => {
+    const key = poGroupKey(row.po,row.job);
+    if (!map.has(key)) map.set(key,0);
+    map.set(key,map.get(key) + row.amount);
+  });
+
+  return map;
+}
+
+function getBillingStatus(percent, poValue) {
+  if (!poValue) {
+    return {label:"ไม่พบยอด PO",className:"status-unknown",key:"ไม่พบยอด PO"};
+  }
+  if (percent > 100.005) {
+    return {label:"ยอดเกิน PO",className:"status-over",key:"ยอดเกิน PO"};
+  }
+  if (percent >= 99.995) {
+    return {label:"วางบิลครบ",className:"status-complete",key:"วางบิลครบ"};
+  }
+  if (percent > 0) {
+    return {label:"วางบิลบางส่วน",className:"status-partial",key:"วางบิลบางส่วน"};
+  }
+  return {label:"ยังไม่วางบิล",className:"status-none",key:"ยังไม่วางบิล"};
+}
+
+function renderBilling() {
+  const month = getFilterValue("billingMonth");
+  const year = getFilterValue("billingYear");
+  const salesperson = getFilterValue("billingSalesperson");
+  const customer = getFilterValue("billingCustomer");
+  const search = getFilterValue("billingSearch").trim().toLowerCase();
+
+  const salesLookup = createSalesLookup();
+  const cumulativeLookup = createCumulativeBilling();
+
+  const filtered = accountRows.filter(row =>
+    matchesDate(row.date,month,year) &&
+    (!salesperson || row.salesperson === salesperson) &&
+    (!customer || row.customer === customer) &&
+    (!search ||
+      row.po.toLowerCase().includes(search) ||
+      row.invoice.toLowerCase().includes(search))
+  );
+
+  const map = new Map();
+
+  filtered.forEach(row => {
+    const key = poGroupKey(row.po,row.job);
+    if (!map.has(key)) {
+      map.set(key,{
+        key,
+        po:row.po || "-",
+        salespeople:new Set(),
+        customers:new Set(),
+        invoices:new Set(),
+        dates:[],
+        periodAmount:0,
+        jobs:new Set()
+      });
+    }
+
+    const group = map.get(key);
+    if (row.salesperson) group.salespeople.add(row.salesperson);
+    if (row.customer) group.customers.add(row.customer);
+    if (row.invoice) group.invoices.add(row.invoice);
+    if (row.date) group.dates.push(row.date);
+    if (row.job) group.jobs.add(row.job);
+    group.periodAmount += row.amount;
+  });
+
+  const grouped = [...map.values()].map(group => {
+    const sales = salesLookup.get(group.key) ||
+      salesLookup.get(normalizePO(group.po));
+
+    const poValue = sales ? sales.amount : 0;
+    const cumulative = cumulativeLookup.get(group.key) || group.periodAmount;
+    const percent = poValue ? cumulative / poValue * 100 : 0;
+    const status = getBillingStatus(percent,poValue);
+
+    return {
+      ...group,
+      salesperson:[...group.salespeople].join(", "),
+      customer:[...group.customers].join(", "),
+      invoices:[...group.invoices].join(", "),
+      datesText:uniqueSorted(group.dates.map(formatDate)).join(", "),
+      latestDate:group.dates.sort((a,b) => b-a)[0] || null,
+      poValue,
+      cumulative,
+      percent,
+      status
+    };
+  }).sort((a,b) =>
+    (b.latestDate?.getTime() || 0) - (a.latestDate?.getTime() || 0)
+  );
+
+  const poTotal = grouped.reduce((sum,row) => sum + row.poValue,0);
+  const periodTotal = grouped.reduce((sum,row) => sum + row.periodAmount,0);
+  const cumulativeTotal = grouped.reduce((sum,row) => sum + row.cumulative,0);
+  const totalPercent = poTotal ? cumulativeTotal / poTotal * 100 : 0;
+
+  setText("billingPOTotal",formatMoney(poTotal));
+  setText("billingPeriodTotal",formatMoney(periodTotal));
+  setText("billingCumulativeTotal",formatMoney(cumulativeTotal));
+  setText("billingPercent",`${totalPercent.toFixed(2)}%`);
+  setText("billingRecordCount",`${formatNumber(grouped.length)} PO/WO`);
+
+  document.getElementById("billingFilterSummary").textContent =
+    buildFilterSummary(month,year,salesperson,customer,search);
+
+  const body = document.getElementById("billingTableBody");
+  body.innerHTML = grouped.length ? grouped.map(row => {
+    const progressWidth = Math.min(Math.max(row.percent,0),100);
+    return `
+      <tr>
+        <td>${escapeHTML(row.datesText || "-")}</td>
+        <td><strong>${escapeHTML(row.po)}</strong></td>
+        <td>${escapeHTML(row.invoices || "-")}</td>
+        <td>${escapeHTML(row.salesperson || "-")}</td>
+        <td>${escapeHTML(row.customer || "-")}</td>
+        <td class="money">${escapeHTML(row.poValue ? formatMoney(row.poValue) : "-")}</td>
+        <td class="money">${escapeHTML(formatMoney(row.periodAmount))}</td>
+        <td class="money">${escapeHTML(formatMoney(row.cumulative))}</td>
+        <td>
+          <span class="status ${row.status.className}">
+            ${row.poValue ? row.percent.toFixed(2) + "% · " : ""}
+            ${escapeHTML(row.status.label)}
+          </span>
+          <div class="progress">
+            <span style="width:${progressWidth}%"></span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="9" class="empty">ไม่พบข้อมูลตามตัวกรอง</td></tr>`;
+
+  document.getElementById("billingTableFoot").innerHTML = `
+    <tr>
+      <td colspan="5">ผลรวม ${formatNumber(grouped.length)} PO/WO</td>
+      <td class="money">${formatMoney(poTotal)}</td>
+      <td class="money">${formatMoney(periodTotal)}</td>
+      <td class="money">${formatMoney(cumulativeTotal)}</td>
+      <td>${totalPercent.toFixed(2)}%</td>
+    </tr>
+  `;
+
+  drawBarChart(
+    "billingByPersonChart",
+    aggregate(grouped,"salesperson","periodAmount").slice(0,10),
+    "#15803d"
+  );
+
+  const statusMap = {};
+  grouped.forEach(row => {
+    statusMap[row.status.key] = (statusMap[row.status.key] || 0) + 1;
+  });
+
+  drawDonutChart("billingStatusChart",[
+    {label:"วางบิลครบ",value:statusMap["วางบิลครบ"] || 0,color:"#16a34a"},
+    {label:"วางบิลบางส่วน",value:statusMap["วางบิลบางส่วน"] || 0,color:"#f59e0b"},
+    {label:"ยังไม่วางบิล",value:statusMap["ยังไม่วางบิล"] || 0,color:"#dc2626"},
+    {label:"ยอดเกิน PO",value:statusMap["ยอดเกิน PO"] || 0,color:"#2563eb"},
+    {label:"ไม่พบยอด PO",value:statusMap["ไม่พบยอด PO"] || 0,color:"#6b7280"}
+  ]);
+}
+
+function aggregate(rows,labelField,valueField) {
+  const map = new Map();
+
+  rows.forEach(row => {
+    const labels = String(row[labelField] || "ไม่ระบุ").split(", ");
+    labels.forEach(label => {
+      map.set(label,(map.get(label) || 0) + Number(row[valueField] || 0));
+    });
+  });
+
+  return [...map.entries()]
+    .map(([label,value]) => ({label,value}))
+    .sort((a,b) => b.value - a.value);
+}
+
+function buildFilterSummary(month,year,salesperson,customer,search) {
+  const values = [
+    month ? `เดือน: ${MONTHS[Number(month)]}` : "เดือน: ทั้งหมด",
+    year ? `ปี: ${Number(year) + 543}` : "ปี: ทั้งหมด",
+    salesperson ? `พนักงานขาย: ${salesperson}` : "พนักงานขาย: ทั้งหมด",
+    customer ? `ลูกค้า: ${customer}` : "ลูกค้า: ทั้งหมด"
+  ];
+  if (search) values.push(`คำค้นหา: ${search}`);
+  return values.join(" | ");
+}
+
+function setText(id,value) {
+  document.getElementById(id).textContent = value;
+}
+
+function prepareCanvas(id) {
+  const canvas = document.getElementById(id);
+  const box = canvas.parentElement.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+
+  canvas.width = Math.max(300,box.width) * ratio;
+  canvas.height = Math.max(220,box.height) * ratio;
+
+  const context = canvas.getContext("2d");
+  context.scale(ratio,ratio);
+
+  return {
+    canvas,
+    context,
+    width:canvas.width / ratio,
+    height:canvas.height / ratio
+  };
+}
+
+function shortText(text,maxLength=24) {
+  text = String(text || "");
+  return text.length > maxLength ? text.slice(0,maxLength - 1) + "…" : text;
+}
+
+function drawBarChart(id,data,color) {
+  const {context:ctx,width,height} = prepareCanvas(id);
+  ctx.clearRect(0,0,width,height);
+
+  if (!data.length || !data.some(item => item.value > 0)) {
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "14px Tahoma";
+    ctx.textAlign = "center";
+    ctx.fillText("ไม่มีข้อมูลสำหรับแสดงกราฟ",width/2,height/2);
+    return;
+  }
+
+  const margin = {top:15,right:20,bottom:85,left:65};
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+  const maxValue = Math.max(...data.map(item => item.value)) || 1;
+  const slot = chartWidth / data.length;
+  const barWidth = Math.max(10,slot * .58);
+
+  ctx.strokeStyle = "#e5e7eb";
+  ctx.fillStyle = "#6b7280";
+  ctx.font = "10px Tahoma";
+  ctx.textAlign = "right";
+
+  for (let i=0;i<=4;i++) {
+    const y = margin.top + chartHeight - chartHeight * i / 4;
+    const value = maxValue * i / 4;
+    ctx.beginPath();
+    ctx.moveTo(margin.left,y);
+    ctx.lineTo(width-margin.right,y);
+    ctx.stroke();
+    ctx.fillText(compactMoney(value),margin.left-7,y+3);
+  }
+
+  data.forEach((item,index) => {
+    const barHeight = chartHeight * item.value / maxValue;
+    const x = margin.left + slot * index + (slot-barWidth)/2;
+    const y = margin.top + chartHeight - barHeight;
+
+    const gradient = ctx.createLinearGradient(0,y,0,margin.top+chartHeight);
+    gradient.addColorStop(0,color);
+    gradient.addColorStop(1,"#86efac");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x,y,barWidth,barHeight);
+
+    ctx.save();
+    ctx.translate(x+barWidth/2,margin.top+chartHeight+8);
+    ctx.rotate(-Math.PI/4);
+    ctx.fillStyle = "#374151";
+    ctx.font = "10px Tahoma";
+    ctx.textAlign = "right";
+    ctx.fillText(shortText(item.label),0,0);
+    ctx.restore();
+  });
+}
+
+function compactMoney(value) {
+  if (value >= 1000000) return `${(value/1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value/1000).toFixed(0)}K`;
+  return String(Math.round(value));
+}
+
+function drawDonutChart(id,data) {
+  const {context:ctx,width,height} = prepareCanvas(id);
+  ctx.clearRect(0,0,width,height);
+
+  const visible = data.filter(item => item.value > 0);
+  const total = visible.reduce((sum,item) => sum + item.value,0);
+
+  if (!total) {
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "14px Tahoma";
+    ctx.textAlign = "center";
+    ctx.fillText("ไม่มีข้อมูลสำหรับแสดงกราฟ",width/2,height/2);
+    return;
+  }
+
+  const centerX = width * .34;
+  const centerY = height * .48;
+  const radius = Math.min(width,height) * .27;
+  let start = -Math.PI / 2;
+
+  visible.forEach(item => {
+    const angle = item.value / total * Math.PI * 2;
+    ctx.beginPath();
+    ctx.arc(centerX,centerY,radius,start,start+angle);
+    ctx.arc(centerX,centerY,radius*.58,start+angle,start,true);
+    ctx.closePath();
+    ctx.fillStyle = item.color;
+    ctx.fill();
+    start += angle;
+  });
+
+  ctx.fillStyle = "#14532d";
+  ctx.font = "bold 25px Tahoma";
+  ctx.textAlign = "center";
+  ctx.fillText(formatNumber(total),centerX,centerY+3);
+  ctx.font = "11px Tahoma";
+  ctx.fillStyle = "#6b7280";
+  ctx.fillText("PO/WO",centerX,centerY+22);
+
+  const legendX = width * .64;
+  visible.forEach((item,index) => {
+    const y = 45 + index * 38;
+    ctx.fillStyle = item.color;
+    ctx.fillRect(legendX,y,13,13);
+    ctx.fillStyle = "#374151";
+    ctx.font = "11px Tahoma";
+    ctx.textAlign = "left";
+    ctx.fillText(
+      `${item.label}: ${formatNumber(item.value)}`,
+      legendX+20,y+11
+    );
+  });
+}
+
+function resetCurrentFilters() {
+  const prefix = currentTab === "sales" ? "sales" : "billing";
+  document.getElementById(prefix+"Month").value = "";
+  document.getElementById(prefix+"Year").value = "";
+  document.getElementById(prefix+"Salesperson").value = "";
+  document.getElementById(prefix+"Customer").value = "";
+  document.getElementById(prefix+"Search").value = "";
+
+  currentTab === "sales" ? renderSales() : renderBilling();
+}
+
+function printReport() {
+  currentTab === "sales" ? renderSales() : renderBilling();
+  setTimeout(() => window.print(),150);
+}
+
+document.querySelectorAll(".tab-btn").forEach(button => {
+  button.addEventListener("click",() => {
+    currentTab = button.dataset.tab;
+
+    document.querySelectorAll(".tab-btn").forEach(item =>
+      item.classList.toggle("active",item === button)
+    );
+
+    document.getElementById("salesSection")
+      .classList.toggle("active",currentTab === "sales");
+
+    document.getElementById("billingSection")
+      .classList.toggle("active",currentTab === "billing");
+
+    setTimeout(() => {
+      currentTab === "sales" ? renderSales() : renderBilling();
+    },50);
+  });
+});
+
+[
+  "salesMonth","salesYear","salesSalesperson","salesCustomer"
+].forEach(id => document.getElementById(id)
+  .addEventListener("change",renderSales));
+
+document.getElementById("salesSearch")
+  .addEventListener("input",renderSales);
+
+[
+  "billingMonth","billingYear","billingSalesperson","billingCustomer"
+].forEach(id => document.getElementById(id)
+  .addEventListener("change",renderBilling));
+
+document.getElementById("billingSearch")
+  .addEventListener("input",renderBilling);
+
+let resizeTimer;
+window.addEventListener("resize",() => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (currentTab === "sales") renderSales();
+    else renderBilling();
+  },250);
+});
+
+loadAllData();
+
+/* อัปเดตข้อมูลอัตโนมัติทุก 15 นาที */
+setInterval(loadAllData,15 * 60 * 1000);
+</script>
+</body>
+</html>
